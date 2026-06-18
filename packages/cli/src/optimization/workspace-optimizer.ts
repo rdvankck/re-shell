@@ -142,7 +142,7 @@ export class WorkspaceOptimizer {
 
     // Check for shared databases
     for (const [serviceId, service] of Object.entries(services)) {
-      const routes = (service as any).routes || [];
+      const routes = service.routes || [];
       for (const route of routes) {
         if (route.target && route.target.includes('database')) {
           const dbName = route.target.split(':')[1] || route.target;
@@ -184,7 +184,7 @@ export class WorkspaceOptimizer {
     let underprovisioned = 0;
 
     for (const [serviceId, service] of Object.entries(services)) {
-      const resources = (service as any).resources;
+      const resources = service.resources;
 
       if (resources?.cpu?.request && resources?.cpu?.limit) {
         const request = parseInt(resources.cpu.request);
@@ -258,7 +258,7 @@ export class WorkspaceOptimizer {
     const kebabCaseRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
     for (const [serviceId, service] of Object.entries(services)) {
-      const name = (service as any).name;
+      const name = service.name;
 
       if (name && !kebabCaseRegex.test(name)) {
         invalidNames.push(name);
@@ -293,8 +293,8 @@ export class WorkspaceOptimizer {
     const services = config.services || {};
 
     for (const [serviceId, service] of Object.entries(services)) {
-      const dependencies = (service as any).dependencies?.production || {};
-      const routes = (service as any).routes || [];
+      const dependencies = service.dependencies?.production || {};
+      const routes = service.routes || [];
 
       // Check if dependencies are actually used
       const unusedDeps: string[] = [];
@@ -346,11 +346,11 @@ export class WorkspaceOptimizer {
     let missingAuth = 0;
 
     for (const [serviceId, service] of Object.entries(services)) {
-      if (!(service as any).healthCheck) {
+      if (!service.healthCheck) {
         missingHealthChecks++;
       }
 
-      const features = (service as any).features || [];
+      const features = service.features || [];
       if (!features.includes('authentication') && !features.includes('security')) {
         missingAuth++;
       }
@@ -404,7 +404,7 @@ export class WorkspaceOptimizer {
     let noScaling = 0;
 
     for (const [serviceId, service] of Object.entries(services)) {
-      const scaling = (service as any).scaling;
+      const scaling = service.scaling;
 
       if (!scaling || scaling.min === scaling.max) {
         noScaling++;
