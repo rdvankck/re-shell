@@ -6693,10 +6693,10 @@ class SharedStore {
     };
 
     this.listeners.set('*', this.listeners.get('*') || new Set());
-    this.listeners.get('*')!.add(wrappedListener as any);
+    this.listeners.get('*')!.add(wrappedListener as () => void);
 
     return () => {
-      this.listeners.get('*')?.delete(wrappedListener as any);
+      this.listeners.get('*')?.delete(wrappedListener as () => void);
     };
   }
 
@@ -7277,7 +7277,7 @@ export function renderReactComponent(
 
   // Fallback for older versions
   container.innerHTML = '';
-  container.appendChild(element as any);
+  container.appendChild(element as Node);
   return { element, container };
 }
 
