@@ -477,7 +477,7 @@ export const loggingMiddleware: HyperExpress.MiddlewareHandler = (request, respo
   const requestId = nanoid();
   
   // Add request ID to request object
-  (request as any).id = requestId;
+  (request as Request & { id: string }).id = requestId;
   
   // Log request
   logger.info({
@@ -531,7 +531,7 @@ export const rateLimitMiddleware: HyperExpress.MiddlewareHandler = async (reques
     next();
   } catch (error) {
     if (error instanceof Error && 'remainingPoints' in error) {
-      const rateLimiterRes = error as any;
+      const rateLimiterRes = error as Error & { remainingPoints?: number; msBeforeNext?: number };
       
       response.header('Retry-After', String(Math.round(rateLimiterRes.msBeforeNext / 1000) || 60));
       response.header('X-RateLimit-Limit', String(config.rateLimit.max));
@@ -1297,7 +1297,7 @@ export function validateRequest<T extends z.ZodType>(schema: T): HyperExpress.Mi
       const validated = await schema.parseAsync(data);
       
       // Attach validated data to request
-      (request as any).validated = validated;
+      (request as Request & { validated?: { body?: unknown; params?: unknown } }).validated = validated;
       
       next();
     } catch (error) {
@@ -1335,7 +1335,7 @@ import { generateTokens, verifyRefreshToken } from '../utils/jwt';
 export const authController = {
   async register(request: HyperExpress.Request, response: HyperExpress.Response) {
     try {
-      const { body } = (request as any).validated;
+      const { body } = (request as Request & { validated?: { body?: unknown } }).validated!;
       const { email, password, name } = body;
       
       // Check if user exists
@@ -1405,7 +1405,7 @@ export const authController = {
   
   async login(request: HyperExpress.Request, response: HyperExpress.Response) {
     try {
-      const { body } = (request as any).validated;
+      const { body } = (request as Request & { validated?: { body?: unknown } }).validated!;
       const { email, password } = body;
       
       // Find user
@@ -1472,7 +1472,7 @@ export const authController = {
   
   async refreshToken(request: HyperExpress.Request, response: HyperExpress.Response) {
     try {
-      const { body } = (request as any).validated;
+      const { body } = (request as Request & { validated?: { body?: unknown } }).validated!;
       const refreshToken = body.refreshToken || request.cookies.refreshToken;
       
       if (!refreshToken) {
@@ -1547,7 +1547,7 @@ export const authController = {
   
   async forgotPassword(request: HyperExpress.Request, response: HyperExpress.Response) {
     try {
-      const { body } = (request as any).validated;
+      const { body } = (request as Request & { validated?: { body?: unknown } }).validated!;
       const { email } = body;
       
       const user = await prisma.user.findUnique({
@@ -1592,7 +1592,7 @@ export const authController = {
   
   async resetPassword(request: HyperExpress.Request, response: HyperExpress.Response) {
     try {
-      const { body, params } = (request as any).validated;
+      const { body, params } = (request as Request & { validated?: { body?: unknown; params?: unknown } }).validated!;
       const { password } = body;
       const { token } = params;
       

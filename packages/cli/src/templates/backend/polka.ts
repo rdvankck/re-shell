@@ -580,7 +580,7 @@ export class UserHandler {
   }
 
   getAllUsers = asyncHandler(async (req: Request, res: Response) => {
-    const { page = 1, limit = 10, search } = req.query as any;
+    const { page = 1, limit = 10, search } = req.query as { page?: number; limit?: number; search?: string };
 
     const result = await this.userService.getAllUsers({
       page: Number(page),
@@ -687,7 +687,7 @@ export class TodoHandler {
 
   getAllTodos = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user!.id;
-    const { page, limit, status, priority } = req.query as any;
+    const { page, limit, status, priority } = req.query as { page?: number; limit?: number; status?: string; priority?: string };
 
     const result = await this.todoService.getAllTodos({
       userId,
@@ -1082,7 +1082,7 @@ const prisma = new PrismaClient({
 
 // Log database events in development
 if (process.env.NODE_ENV === 'development') {
-  prisma.$on('query' as any, (e: any) => {
+  prisma.$on('query' as never, (e: { query: string; duration: number }) => {
     logger.debug(\`Query: \${e.query}\`);
     logger.debug(\`Duration: \${e.duration}ms\`);
   });
@@ -1200,7 +1200,7 @@ export const initWebSocketServer = () => {
     }
 
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as jwt.JwtPayload;
       ws.userId = decoded.id;
       logger.info(\`User \${ws.userId} connected via WebSocket\`);
 
@@ -1466,7 +1466,7 @@ export class AuthService {
 
   async refreshToken(refreshToken: string) {
     try {
-      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) as any;
+      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) as jwt.JwtPayload;
       
       // Check if token exists in database
       const user = await prisma.user.findFirst({
